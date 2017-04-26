@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
@@ -130,8 +131,8 @@ namespace DebugConsole
 
             if (inputField == null)
                 Debug.LogError("The InputField is not assinged at the DebugConsole", this);
-            else
-                inputField.onEndEdit.AddListener(RunCommand);
+            /*else
+                inputField.onEndEdit.AddListener(text => Submit());*/
 
             unityLogHandler = new UnityLogHandler();
 
@@ -159,10 +160,22 @@ namespace DebugConsole
 
         private void Update()
         {
+            InputHandleReturn();
             InputHandleToggle();
             InputHandleArrows();
             InputHandleAutoCompletion();
             InputHandleCtrlBackspace();
+        }
+
+        private void InputHandleReturn()
+        {
+            if (!string.IsNullOrEmpty(inputField.text))
+            {
+                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+                {
+                    Submit();
+                }
+            }
         }
 
         private void InputHandleAutoCompletion()
@@ -173,22 +186,22 @@ namespace DebugConsole
             }
         }
 
-        public void DoAutocompletion()
+        public static void DoAutocompletion()
         {
-            if (inputField.text.Length > 0)
+            if (instance.inputField.text.Length > 0)
             {
-                if (inputField.text != lastAutoCompleteInput)
+                if (instance.inputField.text != instance.lastAutoCompleteInput)
                 {
-                    string[] matchingCommands = consoleCommands
+                    string[] matchingCommands = instance.consoleCommands
                         .Select(x => x.Key.command)
                         .Distinct()
-                        .Where(x => x.ToLower().StartsWith(inputField.text.ToLower()))
+                        .Where(x => x.ToLower().StartsWith(instance.inputField.text.ToLower()))
                         .ToArray();
 
                     if (matchingCommands.Length == 1)
                     {
-                        inputField.text = matchingCommands[0];
-                        inputField.MoveTextEnd(false);
+                        instance.inputField.text = matchingCommands[0];
+                        instance.inputField.MoveTextEnd(false);
                     }
                     else
                     {
@@ -200,8 +213,8 @@ namespace DebugConsole
 
                             if (matchingTillIndex > 0)
                             {
-                                inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
-                                inputField.MoveTextEnd(false);
+                                instance.inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
+                                instance.inputField.MoveTextEnd(false);
                             }
 
                             if (matchingCommands.Length > 1)
@@ -218,7 +231,7 @@ namespace DebugConsole
                     }
                 }
 
-                lastAutoCompleteInput = inputField.text;
+                instance.lastAutoCompleteInput = instance.inputField.text;
             }
         }
 
@@ -335,7 +348,7 @@ namespace DebugConsole
         /// Easier access for running a command
         /// </summary>
         /// <param name="cmd">Command to run</param>
-        internal static void RunCommandStatic(string cmd)
+        public static void RunCommandStatic(string cmd)
         {
             instance.RunCommand(cmd);
         }
@@ -344,7 +357,7 @@ namespace DebugConsole
         /// Run a command
         /// </summary>
         /// <param name="cmd">Command to run</param>
-        internal void RunCommand(string cmd)
+        public void RunCommand(string cmd)
         {
             // Do some cleanup
             cmd = cmd.Trim();
@@ -461,11 +474,6 @@ namespace DebugConsole
                     }
                 }
             }
-
-            // Clear the inputfield
-            inputField.text = string.Empty;
-            inputField.Select();
-            inputField.ActivateInputField();
         }
 
         // Show all the commands, and if they contain help info, show that too
@@ -594,6 +602,24 @@ namespace DebugConsole
             {
                 instance.consolePanel.gameObject.SetActive(false);
                 instance.inputField.text = string.Empty;
+            }
+        }
+
+        public void Submit(bool resumeTyping = true)
+        {
+            RunCommand(inputField.text);
+
+            // Clear the inputfield
+            inputField.text = string.Empty;
+            if (resumeTyping)
+            {
+                inputField.Select();
+                inputField.ActivateInputField();
+            }
+            else
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                inputField.OnDeselect(null);
             }
         }
     }
