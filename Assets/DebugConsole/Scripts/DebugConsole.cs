@@ -182,7 +182,7 @@ namespace DebugConsole
                         if (matchingCommands.Length == 1)
                         {
                             inputField.text = matchingCommands[0];
-                            inputField.caretPosition = inputField.text.Length;
+                            inputField.MoveTextEnd(false);
                         }
                         else
                         {
@@ -195,7 +195,7 @@ namespace DebugConsole
                                 if (matchingTillIndex > 0)
                                 {
                                     inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
-                                    inputField.caretPosition = inputField.text.Length;
+                                    inputField.MoveTextEnd(false);
                                 }
 
                                 if (matchingCommands.Length > 1)
