@@ -169,51 +169,56 @@ namespace DebugConsole
         {
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                if (inputField.text.Length > 0)
-                {
-                    if (inputField.text != lastAutoCompleteInput)
-                    {
-                        string[] matchingCommands = consoleCommands
-                            .Select(x => x.Key.command)
-                            .Distinct()
-                            .Where(x => x.ToLower().StartsWith(inputField.text.ToLower()))
-                            .ToArray();
+                DoAutocompletion();
+            }
+        }
 
-                        if (matchingCommands.Length == 1)
+        public void DoAutocompletion()
+        {
+            if (inputField.text.Length > 0)
+            {
+                if (inputField.text != lastAutoCompleteInput)
+                {
+                    string[] matchingCommands = consoleCommands
+                        .Select(x => x.Key.command)
+                        .Distinct()
+                        .Where(x => x.ToLower().StartsWith(inputField.text.ToLower()))
+                        .ToArray();
+
+                    if (matchingCommands.Length == 1)
+                    {
+                        inputField.text = matchingCommands[0];
+                        inputField.MoveTextEnd(false);
+                    }
+                    else
+                    {
+                        if (matchingCommands.Length > 0)
                         {
-                            inputField.text = matchingCommands[0];
-                            inputField.MoveTextEnd(false);
+                            int matchingTillIndex = Enumerable
+                                .Range(0, matchingCommands.Min(x => x.Length))
+                                .Count(i => matchingCommands.All(x => x[i] == matchingCommands[0][i]));
+
+                            if (matchingTillIndex > 0)
+                            {
+                                inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
+                                inputField.MoveTextEnd(false);
+                            }
+
+                            if (matchingCommands.Length > 1)
+                            {
+                                WriteLine("Available commands:");
+                                foreach (var item in matchingCommands)
+                                    WriteLine("- " + item);
+                            }
                         }
                         else
                         {
-                            if (matchingCommands.Length > 0)
-                            {
-                                int matchingTillIndex = Enumerable
-                                    .Range(0, matchingCommands.Min(x => x.Length))
-                                    .Count(i => matchingCommands.All(x => x[i] == matchingCommands[0][i]));
-
-                                if (matchingTillIndex > 0)
-                                {
-                                    inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
-                                    inputField.MoveTextEnd(false);
-                                }
-
-                                if (matchingCommands.Length > 1)
-                                {
-                                    WriteLine("Available commands:");
-                                    foreach (var item in matchingCommands)
-                                        WriteLine("- " + item);
-                                }
-                            }
-                            else
-                            {
-                                WriteLine("There are no matches for autocompletion");
-                            }
+                            WriteLine("There are no matches for autocompletion");
                         }
                     }
-
-                    lastAutoCompleteInput = inputField.text;
                 }
+
+                lastAutoCompleteInput = inputField.text;
             }
         }
 
