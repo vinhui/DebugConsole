@@ -20,7 +20,7 @@ namespace DebugConsole.UI.Keyboard
         private void OnButtonClick()
         {
             inputField.text += character;
-            DebugConsole.DoAutocompletion();
+            DebugConsole.DoAutoCompletion();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace DebugConsole
     /// <summary>
     /// The debug console
     /// </summary>
-    internal class DebugConsole : MonoBehaviour
+    public class DebugConsole : MonoBehaviour
     {
         /// <summary>
         /// Instance of the monobehaviour
@@ -69,7 +69,7 @@ namespace DebugConsole
         /// <summary>
         /// Should all messages send to the console, also be send to the unity console?
         /// </summary>
-        internal static bool logToUnity = false;
+        private const bool LOG_TO_UNITY = false;
 
         /// <summary>
         /// Field that contains all the text that is send to the console before the console is actually loaded
@@ -102,7 +102,7 @@ namespace DebugConsole
 
         private void Awake()
         {
-            // Set the instance and make sure there arent multiple instances of this thing
+            // Set the instance and make sure there aren't multiple instances of this thing
             if (instance == null)
             {
                 instance = this;
@@ -117,7 +117,7 @@ namespace DebugConsole
 
             // Do some boring null checks
             if (consoleText == null)
-                Debug.LogError("The Console Text is not assinged at the DebugConsole", this);
+                Debug.LogError("The Console Text is not assigned at the DebugConsole", this);
             else
             {
                 consoleText.text = cachedText;
@@ -125,12 +125,12 @@ namespace DebugConsole
             }
 
             if (consolePanel == null)
-                Debug.LogError("The Console Panel is not assinged at the DebugConsole", this);
+                Debug.LogError("The Console Panel is not assigned at the DebugConsole", this);
             if (scrollRect == null)
-                Debug.LogError("The ScrollRect is not assinged at the DebugConsole", this);
+                Debug.LogError("The ScrollRect is not assigned at the DebugConsole", this);
 
             if (inputField == null)
-                Debug.LogError("The InputField is not assinged at the DebugConsole", this);
+                Debug.LogError("The InputField is not assigned at the DebugConsole", this);
             /*else
                 inputField.onEndEdit.AddListener(text => Submit());*/
 
@@ -146,9 +146,9 @@ namespace DebugConsole
             ScrollToBottom();
         }
 
-        private void Application_logMessageReceived(string condition, string stackTrace, LogType type)
+        private static void Application_logMessageReceived(string condition, string stackTrace, LogType type)
         {
-            if (logToUnity)
+            if (LOG_TO_UNITY)
                 defaultLogHandler.LogFormat(LogType.Log, null, stackTrace);
             if (type == LogType.Exception)
             {
@@ -169,83 +169,77 @@ namespace DebugConsole
 
         private void InputHandleReturn()
         {
-            if (!string.IsNullOrEmpty(inputField.text))
+            if (string.IsNullOrEmpty(inputField.text)) return;
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-                {
-                    Submit();
-                }
+                Submit();
             }
         }
 
-        private void InputHandleAutoCompletion()
+        private static void InputHandleAutoCompletion()
         {
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                DoAutocompletion();
+                DoAutoCompletion();
             }
         }
 
-        public static void DoAutocompletion()
+        public static void DoAutoCompletion()
         {
-            if (instance.inputField.text.Length > 0)
+            if (instance.inputField.text.Length <= 0) return;
+            if (instance.inputField.text != instance.lastAutoCompleteInput)
             {
-                if (instance.inputField.text != instance.lastAutoCompleteInput)
-                {
-                    string[] matchingCommands = instance.consoleCommands
-                        .Select(x => x.Key.command)
-                        .Distinct()
-                        .Where(x => x.ToLower().StartsWith(instance.inputField.text.ToLower()))
-                        .ToArray();
+                string[] matchingCommands = instance.consoleCommands
+                    .Select(x => x.Key.command)
+                    .Distinct()
+                    .Where(x => x.ToLower().StartsWith(instance.inputField.text.ToLower()))
+                    .ToArray();
 
-                    if (matchingCommands.Length == 1)
+                if (matchingCommands.Length == 1)
+                {
+                    instance.inputField.text = matchingCommands[0];
+                    instance.inputField.MoveTextEnd(false);
+                }
+                else
+                {
+                    if (matchingCommands.Length > 0)
                     {
-                        instance.inputField.text = matchingCommands[0];
-                        instance.inputField.MoveTextEnd(false);
+                        int matchingTillIndex = Enumerable
+                            .Range(0, matchingCommands.Min(x => x.Length))
+                            .Count(i => matchingCommands.All(x => x[i] == matchingCommands[0][i]));
+
+                        if (matchingTillIndex > 0)
+                        {
+                            instance.inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
+                            instance.inputField.MoveTextEnd(false);
+                        }
+
+                        if (matchingCommands.Length > 1)
+                        {
+                            WriteLine("Available commands:");
+                            foreach (string item in matchingCommands)
+                                WriteLine("- " + item);
+                        }
                     }
                     else
                     {
-                        if (matchingCommands.Length > 0)
-                        {
-                            int matchingTillIndex = Enumerable
-                                .Range(0, matchingCommands.Min(x => x.Length))
-                                .Count(i => matchingCommands.All(x => x[i] == matchingCommands[0][i]));
-
-                            if (matchingTillIndex > 0)
-                            {
-                                instance.inputField.text = matchingCommands[0].Substring(0, matchingTillIndex);
-                                instance.inputField.MoveTextEnd(false);
-                            }
-
-                            if (matchingCommands.Length > 1)
-                            {
-                                WriteLine("Available commands:");
-                                foreach (var item in matchingCommands)
-                                    WriteLine("- " + item);
-                            }
-                        }
-                        else
-                        {
-                            WriteLine("There are no matches for autocompletion");
-                        }
+                        WriteLine("There are no matches for auto completion");
                     }
                 }
-
-                instance.lastAutoCompleteInput = instance.inputField.text;
             }
+
+            instance.lastAutoCompleteInput = instance.inputField.text;
         }
 
         private void InputHandleCtrlBackspace()
         {
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Backspace))
+            if (!Input.GetKey(KeyCode.LeftControl) || !Input.GetKeyDown(KeyCode.Backspace)) return;
+            while (inputField.text.Length > 0 &&
+                   !char.IsWhiteSpace(inputField.text[inputField.text.Length - 1]) &&
+                   !char.IsUpper(inputField.text[inputField.text.Length - 1]) &&
+                   !char.IsPunctuation(inputField.text[inputField.text.Length - 1]))
             {
-                while (inputField.text.Length > 0 &&
-                       !char.IsWhiteSpace(inputField.text[inputField.text.Length - 1]) &&
-                       !char.IsUpper(inputField.text[inputField.text.Length - 1]) &&
-                       !char.IsPunctuation(inputField.text[inputField.text.Length - 1]))
-                {
-                    inputField.text = inputField.text.Substring(0, inputField.text.Length - 1);
-                }
+                inputField.text = inputField.text.Substring(0, inputField.text.Length - 1);
             }
         }
 
@@ -262,7 +256,7 @@ namespace DebugConsole
                 else
                     inputField.text = string.Empty;
             }
-            if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 currentInputHistory = Mathf.Max(currentInputHistory - 1, -1);
                 if (currentInputHistory == -1)
@@ -271,11 +265,9 @@ namespace DebugConsole
                 }
                 else
                 {
-                    if (inputHistory.Count > 0)
-                    {
-                        inputField.text = inputHistory[currentInputHistory];
-                        inputField.caretPosition = inputField.text.Length;
-                    }
+                    if (inputHistory.Count <= 0) return;
+                    inputField.text = inputHistory[currentInputHistory];
+                    inputField.caretPosition = inputField.text.Length;
                 }
             }
         }
@@ -307,7 +299,7 @@ namespace DebugConsole
         /// Go through the assemblies to search for the ConsoleCommandAttribute
         /// </summary>
         /// <param name="assemblies">Assemblies to include in the search</param>
-        private void StartCommandIndexing(Assembly[] assemblies)
+        private void StartCommandIndexing(IEnumerable<Assembly> assemblies)
         {
             // Start a timer so we know how long the indexing takes
             Stopwatch s = new Stopwatch();
@@ -321,6 +313,7 @@ namespace DebugConsole
             {
                 StartCommandIndexing(assembly);
             }
+
             s.Stop();
             // And show how much time has passed
             WriteLine("Indexed all commands in " + s.ElapsedMilliseconds + " milliseconds");
@@ -360,120 +353,134 @@ namespace DebugConsole
         public void RunCommand(string cmd)
         {
             // Do some cleanup
-            cmd = cmd.Trim();
-            cmd = cmd.TrimStart('/', '\\', '`');
-            cmd = cmd.Trim();
+            cmd = TrimCommand(cmd);
 
             // Make sure there is something left
-            if (!string.IsNullOrEmpty(cmd))
+            if (string.IsNullOrEmpty(cmd)) return;
+
+            WriteLine("> " + cmd);
+            currentInputHistory = -1;
+            if (inputHistory.Count > 0 && inputHistory[0] != cmd || inputHistory.Count == 0)
+                inputHistory.Insert(0, cmd);
+
+            // Split the command in to smaller parts
+            string[] text = SplitCommand(cmd);
+
+            // Again, make sure there is something
+            if (text.Length <= 0) return;
+
+            // Find matches for the input from the indexed commands
+            Dictionary<ConsoleCommandAttribute, MethodInfo> commands = consoleCommands
+                .Where(x => x.Key.command.ToLower() == text[0].ToLower())
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            // Are there any commands?
+            if (commands.Count > 0)
             {
-                WriteLine("> " + cmd);
-                currentInputHistory = -1;
-                if ((inputHistory.Count > 0 && inputHistory[0] != cmd) || inputHistory.Count == 0)
-                    inputHistory.Insert(0, cmd);
-
-                // Split the command in to smaller parts
-                string[] text = cmd.Split('"')
-                    .Select((element, index) => index % 2 == 0 // If even index
-                        ? element.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries) // Split the item
-                        : new[] {element}) // Keep the entire item
-                    .SelectMany(element => element)
-                    .ToArray();
-
-                // Again, make sure there is something
-                if (text.Length > 0)
+                // Are there parameters, and if so, does the input have the same amount?
+                if (commands.Any(x => x.Value.GetParameters().Length == text.Length - 1))
                 {
-                    // Find matches for the input from the indexed commands
-                    Dictionary<ConsoleCommandAttribute, MethodInfo> commands = consoleCommands
-                        .Where(x => x.Key.command.ToLower() == text[0].ToLower())
-                        .ToDictionary(x => x.Key, x => x.Value);
+                    // There might be multiple ConsoleCommandAttributes on the same method, just pick the first one
+                    KeyValuePair<ConsoleCommandAttribute, MethodInfo> command =
+                        commands.FirstOrDefault(x => x.Value.GetParameters().Length == text.Length - 1);
 
-                    // Are there any commands?
-                    if (commands.Count > 0)
+                    try
                     {
-                        // Are there parameters, and if so, does the input have the same amount?
-                        if (commands.Any(x => x.Value.GetParameters().Length == text.Length - 1))
-                        {
-                            // There might be multiple ConsoleCommandAttributes on the same method, just pick the first one
-                            KeyValuePair<ConsoleCommandAttribute, MethodInfo> command =
-                                commands.FirstOrDefault(x => x.Value.GetParameters().Length == text.Length - 1);
+                        object[] parameters = GetCommandParameters(text, command);
 
-                            try
-                            {
-                                object[] parameters = new object[text.Length - 1];
-                                int i = 0;
-                                // Fill the parameters from the input and do casting of the text
-                                foreach (ParameterInfo parameterInfo in command.Value.GetParameters())
-                                {
-                                    try
-                                    {
-                                        if (parameterInfo.ParameterType == typeof(object))
-                                            parameters[i] = text[i + 1];
-                                        else
-                                            parameters[i] =
-                                                parameterInfo.ParameterType.IsEnum
-                                                    ? Enum.Parse(parameterInfo.ParameterType, text[i + 1], true)
-                                                    : Convert.ChangeType(text[i + 1], parameterInfo.ParameterType);
-                                    }
-                                    catch (InvalidCastException)
-                                    {
-                                        WriteErrorLine("Failed to cast " + text[i + 1] + " to " +
-                                                       parameterInfo.ParameterType);
-                                    }
-                                    i++;
-                                }
+                        // Call the method with the parameters
+                        object returnValue = command.Value.Invoke(
+                            command.Value.DeclaringType.IsSubclassOf(typeof(MonoBehaviour))
+                                ? FindObjectOfType(command.Value.DeclaringType)
+                                : null, parameters);
 
-                                // Call the method with the parameters
-                                object returnValue;
-                                if (command.Value.DeclaringType.IsSubclassOf(typeof(MonoBehaviour)))
-                                {
-                                    returnValue =
-                                        command.Value.Invoke(FindObjectOfType(command.Value.DeclaringType),
-                                            parameters);
-                                }
-                                else
-                                    returnValue = command.Value.Invoke(null, parameters);
-
-                                // If theres a return value, output it to the console
-                                if (returnValue != null)
-                                    WriteLine(returnValue.ToString());
-                            }
-                            catch (Exception e)
-                            {
-                                // Show the user running the command failed and for what reason
-                                WriteErrorLine("Failed to run command: ");
-                                if (e is TargetParameterCountException)
-                                    WriteErrorLine("Parameters are invalid");
-                                else
-                                {
-                                    WriteErrorLine(e.Message);
-                                    throw;
-                                }
-                                // Show the help info for the command if its available
-                                if (!string.IsNullOrEmpty(command.Key.help))
-                                {
-                                    WriteLine(command.Key.help);
-                                }
-                            }
-                        }
+                        // If there's a return value, output it to the console
+                        if (returnValue != null)
+                            WriteLine(returnValue.ToString());
+                    }
+                    catch (Exception e)
+                    {
+                        // Show the user running the command failed and for what reason
+                        WriteErrorLine("Failed to run command: ");
+                        if (e is TargetParameterCountException)
+                            WriteErrorLine("Parameters are invalid");
                         else
                         {
-                            // Show the user what went wrong
-                            WriteWarningLine("The amount of parameters doesnt match");
-                            string help = commands.Select(x => x.Key.help)
-                                .FirstOrDefault(x => !string.IsNullOrEmpty(x));
-                            if (!string.IsNullOrEmpty(help))
-                            {
-                                WriteLine(help);
-                            }
+                            WriteErrorLine(e.Message);
+                            throw;
+                        }
+
+                        // Show the help info for the command if its available
+                        if (!string.IsNullOrEmpty(command.Key.help))
+                        {
+                            WriteLine(command.Key.help);
                         }
                     }
-                    else
+                }
+                else
+                {
+                    // Show the user what went wrong
+                    WriteWarningLine("The amount of parameters doesn't match");
+                    string help = commands.Select(x => x.Key.help)
+                        .FirstOrDefault(x => !string.IsNullOrEmpty(x));
+                    if (!string.IsNullOrEmpty(help))
                     {
-                        WriteWarningLine("Unknown command");
+                        WriteLine(help);
                     }
                 }
             }
+            else
+            {
+                WriteWarningLine("Unknown command");
+            }
+        }
+
+        private static object[] GetCommandParameters(IList<string> text,
+            KeyValuePair<ConsoleCommandAttribute, MethodInfo> command)
+        {
+            object[] parameters = new object[text.Count - 1];
+            int i = 0;
+            // Fill the parameters from the input and do casting of the text
+            foreach (ParameterInfo parameterInfo in command.Value.GetParameters())
+            {
+                try
+                {
+                    if (parameterInfo.ParameterType == typeof(object))
+                        parameters[i] = text[i + 1];
+                    else
+                        parameters[i] =
+                            parameterInfo.ParameterType.IsEnum
+                                ? Enum.Parse(parameterInfo.ParameterType, text[i + 1], true)
+                                : Convert.ChangeType(text[i + 1], parameterInfo.ParameterType);
+                }
+                catch (InvalidCastException)
+                {
+                    WriteErrorLine("Failed to cast " + text[i + 1] + " to " +
+                                   parameterInfo.ParameterType);
+                }
+
+                i++;
+            }
+
+            return parameters;
+        }
+
+        private static string[] SplitCommand(string cmd)
+        {
+            return cmd.Split('"')
+                .Select((element, index) => index % 2 == 0 // If even index
+                    ? element.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries) // Split the item
+                    : new[] {element}) // Keep the entire item
+                .SelectMany(element => element)
+                .ToArray();
+        }
+
+        private static string TrimCommand(string cmd)
+        {
+            cmd = cmd.Trim();
+            cmd = cmd.TrimStart('/', '\\', '`');
+            cmd = cmd.Trim();
+            return cmd;
         }
 
         // Show all the commands, and if they contain help info, show that too
@@ -501,16 +508,15 @@ namespace DebugConsole
         {
             WriteLine("<color=red>" + line + "</color>", false);
 
-            if (logToUnity && defaultLogHandler != null)
+            if (LOG_TO_UNITY && defaultLogHandler != null)
                 defaultLogHandler.LogFormat(LogType.Error, null, "{0}", line);
 
-            // If the console should be shown on errors, nows the time to do so
-            if (instance != null && instance.showOnError)
-            {
-                instance.consolePanel.gameObject.SetActive(true);
-                instance.inputField.Select();
-                instance.inputField.ActivateInputField();
-            }
+            // If the console should be shown on errors, now is the time to do so
+            if (instance == null || !instance.showOnError) return;
+
+            instance.consolePanel.gameObject.SetActive(true);
+            instance.inputField.Select();
+            instance.inputField.ActivateInputField();
         }
 
         /// <summary>
@@ -521,7 +527,7 @@ namespace DebugConsole
         {
             WriteLine("<color=yellow>" + line + "</color>", false);
 
-            if (logToUnity && defaultLogHandler != null)
+            if (LOG_TO_UNITY && defaultLogHandler != null)
                 defaultLogHandler.LogFormat(LogType.Warning, null, "{0}", line);
         }
 
@@ -531,7 +537,7 @@ namespace DebugConsole
         /// <param name="line">The line to show</param>
         public static void WriteLine(string line)
         {
-            WriteLine(line, logToUnity);
+            WriteLine(line, LOG_TO_UNITY);
         }
 
         private static void WriteLine(string line, bool logToUnity)
@@ -571,12 +577,11 @@ namespace DebugConsole
 
         private static void ScrollToBottom()
         {
-            if (instance.scrollRect != null)
-            {
-                Canvas.ForceUpdateCanvases();
-                instance.scrollRect.verticalNormalizedPosition = 0f;
-                Canvas.ForceUpdateCanvases();
-            }
+            if (instance.scrollRect == null) return;
+
+            Canvas.ForceUpdateCanvases();
+            instance.scrollRect.verticalNormalizedPosition = 0f;
+            Canvas.ForceUpdateCanvases();
         }
 
         /// <summary>
@@ -584,13 +589,12 @@ namespace DebugConsole
         /// </summary>
         public static void Show()
         {
-            if (instance != null)
-            {
-                instance.consolePanel.gameObject.SetActive(true);
-                instance.inputField.Select();
-                instance.inputField.ActivateInputField();
-                instance.inputField.text = string.Empty;
-            }
+            if (instance == null) return;
+
+            instance.consolePanel.gameObject.SetActive(true);
+            instance.inputField.Select();
+            instance.inputField.ActivateInputField();
+            instance.inputField.text = string.Empty;
         }
 
         /// <summary>
@@ -598,11 +602,10 @@ namespace DebugConsole
         /// </summary>
         public static void Hide()
         {
-            if (instance != null)
-            {
-                instance.consolePanel.gameObject.SetActive(false);
-                instance.inputField.text = string.Empty;
-            }
+            if (instance == null) return;
+
+            instance.consolePanel.gameObject.SetActive(false);
+            instance.inputField.text = string.Empty;
         }
 
         public void Submit(bool resumeTyping = true)
