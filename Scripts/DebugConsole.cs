@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
-namespace DebugConsole
+namespace DebuggingConsole
 {
     /// <summary>
     /// The debug console
@@ -87,7 +88,7 @@ namespace DebugConsole
         /// <summary>
         /// All the commands and the method to call are stored here
         /// </summary>
-        private Dictionary<ConsoleCommandAttribute, MethodInfo> consoleCommands;
+        private List<ConsoleCommand> consoleCommands;
 
         private static ILogHandler defaultLogHandler;
         private static UnityLogHandler unityLogHandler;
@@ -190,7 +191,7 @@ namespace DebugConsole
             if (instance.inputField.text != instance.lastAutoCompleteInput)
             {
                 string[] matchingCommands = instance.consoleCommands
-                    .Select(x => x.Key.command)
+                    .Select(x => x.command)
                     .Distinct()
                     .Where(x => x.ToLower().StartsWith(instance.inputField.text.ToLower()))
                     .ToArray();
@@ -218,7 +219,7 @@ namespace DebugConsole
                         {
                             WriteLine("Available commands:");
                             foreach (string item in matchingCommands)
-                                WriteLine("- " + item);
+                                WriteLine("- {0}", item);
                         }
                     }
                     else
@@ -299,14 +300,11 @@ namespace DebugConsole
         /// Go through the assemblies to search for the ConsoleCommandAttribute
         /// </summary>
         /// <param name="assemblies">Assemblies to include in the search</param>
-        private void StartCommandIndexing(IEnumerable<Assembly> assemblies)
+        public static void StartCommandIndexing(IEnumerable<Assembly> assemblies)
         {
             // Start a timer so we know how long the indexing takes
             Stopwatch s = new Stopwatch();
             s.Start();
-
-            // Clear the already set commands
-            consoleCommands = new Dictionary<ConsoleCommandAttribute, MethodInfo>();
 
             // Loop through the assemblies and index them individually
             foreach (Assembly assembly in assemblies)
@@ -316,24 +314,24 @@ namespace DebugConsole
 
             s.Stop();
             // And show how much time has passed
-            WriteLine("Indexed all commands in " + s.ElapsedMilliseconds + " milliseconds");
+            WriteLine("Indexed all commands in {0} milliseconds", s.ElapsedMilliseconds);
         }
 
         /// <summary>
         /// Go through a single assembly to search for the ConsoleCommandAttribute
         /// </summary>
         /// <param name="assembly">Assembly to search in</param>
-        private void StartCommandIndexing(Assembly assembly)
+        public static void StartCommandIndexing(Assembly assembly)
         {
-            // Just a null check, you never know
-            if (consoleCommands == null)
-                consoleCommands = new Dictionary<ConsoleCommandAttribute, MethodInfo>();
+            CommandAttributeIndexer attributeIndexer = new CommandAttributeIndexer(assembly);
+            attributeIndexer.StartIndexing();
 
-            CommandIndexer indexer = new CommandIndexer(assembly);
-            indexer.StartIndexing();
-            foreach (KeyValuePair<ConsoleCommandAttribute, MethodInfo> item in indexer.commands)
+            if (instance.consoleCommands == null)
+                instance.consoleCommands = new List<ConsoleCommand>(attributeIndexer.commands.Count);
+
+            foreach (KeyValuePair<ConsoleCommandAttribute, MethodInfo> item in attributeIndexer.commands)
             {
-                consoleCommands.Add(item.Key, item.Value);
+                instance.consoleCommands.Add(new ConsoleCommand(item.Key, item.Value));
             }
         }
 
@@ -344,6 +342,16 @@ namespace DebugConsole
         public static void RunCommandStatic(string cmd)
         {
             instance.RunCommand(cmd);
+        }
+
+        public static void AddCommand(ConsoleCommand command)
+        {
+            instance.consoleCommands.Add(command);
+        }
+
+        public static void AddCommands(params ConsoleCommand[] commands)
+        {
+            instance.consoleCommands.AddRange(commands);
         }
 
         /// <summary>
@@ -358,70 +366,44 @@ namespace DebugConsole
             // Make sure there is something left
             if (string.IsNullOrEmpty(cmd)) return;
 
-            WriteLine("> " + cmd);
+            WriteLine("> {0}", cmd);
             currentInputHistory = -1;
             if (inputHistory.Count > 0 && inputHistory[0] != cmd || inputHistory.Count == 0)
                 inputHistory.Insert(0, cmd);
 
             // Split the command in to smaller parts
-            string[] text = SplitCommand(cmd);
+            string[] text = ConsoleCommand.SplitOnSpaces(cmd);
 
             // Again, make sure there is something
-            if (text.Length <= 0) return;
+            if (text.Length == 0) return;
+
+            string enteredCommand = text[0].ToLower();
+            string[] parameters = new string[text.Length - 1];
+            for (int i = 0; i < parameters.Length; i++)
+                parameters[i] = text[i + 1];
 
             // Find matches for the input from the indexed commands
-            Dictionary<ConsoleCommandAttribute, MethodInfo> commands = consoleCommands
-                .Where(x => x.Key.command.ToLower() == text[0].ToLower())
-                .ToDictionary(x => x.Key, x => x.Value);
+            List<ConsoleCommand> matchingCommands = consoleCommands
+                .Where(x => x.MatchesEnteredCommand(enteredCommand))
+                .ToList();
 
-            // Are there any commands?
-            if (commands.Count > 0)
+            if (matchingCommands.Count > 0)
             {
-                // Are there parameters, and if so, does the input have the same amount?
-                if (commands.Any(x => x.Value.GetParameters().Length == text.Length - 1))
+                string paramsAsString = cmd.Substring(enteredCommand.Length).Trim();
+                ConsoleCommand matchingCommand = matchingCommands
+                    .FirstOrDefault(x => x.captureAllParamsAsOne
+                        ? x.MatchesParameters(paramsAsString)
+                        : x.MatchesParameters(parameters));
+                if (matchingCommand != null)
                 {
-                    // There might be multiple ConsoleCommandAttributes on the same method, just pick the first one
-                    KeyValuePair<ConsoleCommandAttribute, MethodInfo> command =
-                        commands.FirstOrDefault(x => x.Value.GetParameters().Length == text.Length - 1);
-
-                    try
-                    {
-                        object[] parameters = GetCommandParameters(text, command);
-
-                        // Call the method with the parameters
-                        object returnValue = command.Value.Invoke(
-                            command.Value.DeclaringType.IsSubclassOf(typeof(MonoBehaviour))
-                                ? FindObjectOfType(command.Value.DeclaringType)
-                                : null, parameters);
-
-                        // If there's a return value, output it to the console
-                        if (returnValue != null)
-                            WriteLine(returnValue.ToString());
-                    }
-                    catch (Exception e)
-                    {
-                        // Show the user running the command failed and for what reason
-                        WriteErrorLine("Failed to run command: ");
-                        if (e is TargetParameterCountException)
-                            WriteErrorLine("Parameters are invalid");
-                        else
-                        {
-                            WriteErrorLine(e.Message);
-                            throw;
-                        }
-
-                        // Show the help info for the command if its available
-                        if (!string.IsNullOrEmpty(command.Key.help))
-                        {
-                            WriteLine(command.Key.help);
-                        }
-                    }
+                    matchingCommand.Invoke(enteredCommand,
+                        matchingCommand.captureAllParamsAsOne ? new[] {paramsAsString} : parameters);
                 }
                 else
                 {
                     // Show the user what went wrong
                     WriteWarningLine("The amount of parameters doesn't match");
-                    string help = commands.Select(x => x.Key.help)
+                    string help = matchingCommands.Select(x => x.help)
                         .FirstOrDefault(x => !string.IsNullOrEmpty(x));
                     if (!string.IsNullOrEmpty(help))
                     {
@@ -433,46 +415,6 @@ namespace DebugConsole
             {
                 WriteWarningLine("Unknown command");
             }
-        }
-
-        private static object[] GetCommandParameters(IList<string> text,
-            KeyValuePair<ConsoleCommandAttribute, MethodInfo> command)
-        {
-            object[] parameters = new object[text.Count - 1];
-            int i = 0;
-            // Fill the parameters from the input and do casting of the text
-            foreach (ParameterInfo parameterInfo in command.Value.GetParameters())
-            {
-                try
-                {
-                    if (parameterInfo.ParameterType == typeof(object))
-                        parameters[i] = text[i + 1];
-                    else
-                        parameters[i] =
-                            parameterInfo.ParameterType.IsEnum
-                                ? Enum.Parse(parameterInfo.ParameterType, text[i + 1], true)
-                                : Convert.ChangeType(text[i + 1], parameterInfo.ParameterType);
-                }
-                catch (InvalidCastException)
-                {
-                    WriteErrorLine("Failed to cast " + text[i + 1] + " to " +
-                                   parameterInfo.ParameterType);
-                }
-
-                i++;
-            }
-
-            return parameters;
-        }
-
-        private static string[] SplitCommand(string cmd)
-        {
-            return cmd.Split('"')
-                .Select((element, index) => index % 2 == 0 // If even index
-                    ? element.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries) // Split the item
-                    : new[] {element}) // Keep the entire item
-                .SelectMany(element => element)
-                .ToArray();
         }
 
         private static string TrimCommand(string cmd)
@@ -490,15 +432,26 @@ namespace DebugConsole
         // ReSharper disable once UnusedMember.Local
         private void ShowCommandsList()
         {
-            foreach (ConsoleCommandAttribute attribute in instance.consoleCommands.Keys)
+            foreach (ConsoleCommand command in instance.consoleCommands)
             {
-                if (attribute.excludeFromCommandList)
+                if (command.excludeFromCommandList)
                     continue;
-                WriteLine("\r\n" + attribute.command + "\r\n\t" + attribute.help);
+                WriteLine("\r\n{0}", command);
             }
         }
 
         #endregion Commands stuff
+
+        /// <summary>
+        /// Write and error line to the console
+        /// </summary>
+        /// <param name="format">A composite format string.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        [StringFormatMethod("format")]
+        public static void WriteErrorLine(string format, params object[] args)
+        {
+            WriteErrorLine(string.Format(format, args));
+        }
 
         /// <summary>
         /// Write an error line to the console
@@ -522,6 +475,17 @@ namespace DebugConsole
         /// <summary>
         /// Write a warning to the console, lets hope the user wont ignore it
         /// </summary>
+        /// <param name="format">A composite format string.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        [StringFormatMethod("format")]
+        public static void WriteWarningLine(string format, params object[] args)
+        {
+            WriteWarningLine(string.Format(format, args));
+        }
+
+        /// <summary>
+        /// Write a warning to the console, lets hope the user wont ignore it
+        /// </summary>
         /// <param name="line">The line to show</param>
         public static void WriteWarningLine(string line)
         {
@@ -529,6 +493,17 @@ namespace DebugConsole
 
             if (LOG_TO_UNITY && defaultLogHandler != null)
                 defaultLogHandler.LogFormat(LogType.Warning, null, "{0}", line);
+        }
+
+        /// <summary>
+        /// Write some text to the console
+        /// </summary>
+        /// <param name="format">A composite format string.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        [StringFormatMethod("format")]
+        public static void WriteLine(string format, params object[] args)
+        {
+            WriteLine(string.Format(format, args));
         }
 
         /// <summary>

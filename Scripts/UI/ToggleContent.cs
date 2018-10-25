@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace DebugConsole.UI
+namespace DebuggingConsole.UI
 {
     public class ToggleContent : MonoBehaviour
     {

@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 
-namespace DebugConsole
+namespace DebuggingConsole
 {
-    public class CommandIndexer
+    public class CommandAttributeIndexer
     {
         private readonly Assembly assembly;
         public Dictionary<ConsoleCommandAttribute, MethodInfo> commands { get; protected set; }
 
-        public CommandIndexer(Assembly assembly)
+        public CommandAttributeIndexer(Assembly assembly)
         {
             this.assembly = assembly;
         }
@@ -35,7 +36,14 @@ namespace DebugConsole
             // And finally, loop through all the attributes of type ConsoleCommandAttribute on the method
             foreach (object attribute in method.GetCustomAttributes(typeof(ConsoleCommandAttribute), true))
             {
-                ParseAttribute(attribute as ConsoleCommandAttribute, method);
+                try
+                {
+                    ParseAttribute(attribute as ConsoleCommandAttribute, method);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
         }
 

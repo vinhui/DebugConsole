@@ -1,36 +1,36 @@
 ﻿using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace DebugConsole
+namespace DebuggingConsole
 {
     public class UnityLogHandler : ILogHandler
     {
-        public void LogException(Exception exception, UnityEngine.Object context)
+        public void LogException(Exception exception, Object context)
         {
-            LogFormat(LogType.Exception, context, "{0}", new object[] { exception.Message });
+            LogFormat(LogType.Exception, context, "{0}", exception.Message);
         }
 
-        public void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args)
+        public void LogFormat(LogType logType, Object context, string format, params object[] args)
         {
             switch (logType)
             {
                 case LogType.Error:
-                    DebugConsole.WriteErrorLine(string.Format(format, args));
+                    DebugConsole.WriteErrorLine(format, args);
                     break;
 
                 case LogType.Warning:
-                    DebugConsole.WriteWarningLine(string.Format(format, args));
+                    DebugConsole.WriteWarningLine(format, args);
                     break;
 
                 case LogType.Log:
-                    DebugConsole.WriteLine(string.Format(format, args));
+                    DebugConsole.WriteLine(format, args);
                     break;
 
                 case LogType.Exception:
-                    DebugConsole.WriteErrorLine(string.Format(format, args));
+                    DebugConsole.WriteErrorLine(format, args);
                     break;
 
-                case LogType.Assert:
                 default:
                     throw new NotImplementedException();
             }

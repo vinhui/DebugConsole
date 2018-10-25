@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace DebugConsole
+namespace DebuggingConsole
 {
     public class ToggleActive : MonoBehaviour
     {

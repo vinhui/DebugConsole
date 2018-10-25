@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DebugConsole.UI.Keyboard
+namespace DebuggingConsole.UI.Keyboard
 {
     [RequireComponent(typeof(Button))]
     public class KeyboardButton : MonoBehaviour

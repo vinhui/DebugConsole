@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DebugConsole
+namespace DebuggingConsole
 {
     public static class BasicCommands
     {

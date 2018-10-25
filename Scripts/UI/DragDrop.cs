@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace DebugConsole.UI
+namespace DebuggingConsole.UI
 {
     public class DragDrop : MonoBehaviour
     {
