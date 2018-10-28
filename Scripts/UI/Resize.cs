@@ -8,13 +8,23 @@ namespace DebuggingConsole.UI
         public Vector2 minSize;
         private Vector2 maxSize;
 
-        private Vector2 offset;
+        public bool resizeHorizontal = true;
+        public bool resizeVertical = true;
+
         private bool dragging;
+        private Vector2 startSize;
+        private Vector2 startMousePos;
 
         private void Awake()
         {
             if (resizeBox == null)
                 Debug.LogError("ResizeBox is null on Resize", this);
+
+            var oldPivot = resizeBox.pivot;
+            var newPivot = new Vector2(0, 1);
+            resizeBox.localPosition +=
+                (Vector3) ((newPivot - oldPivot) * resizeBox.lossyScale * resizeBox.sizeDelta);
+            resizeBox.pivot = newPivot;
 
             maxSize = new Vector2(Screen.width, Screen.height);
         }
@@ -24,7 +34,8 @@ namespace DebuggingConsole.UI
             if (resizeBox == null)
                 return;
 
-            offset = resizeBox.sizeDelta - new Vector2(Input.mousePosition.x, -Input.mousePosition.y);
+            startSize = resizeBox.sizeDelta;
+            startMousePos = Input.mousePosition;
             dragging = true;
         }
 
@@ -35,20 +46,22 @@ namespace DebuggingConsole.UI
 
             if (dragging)
             {
-                Vector2 newSize = new Vector2(Input.mousePosition.x, -Input.mousePosition.y) + offset;
-                newSize = ClampVector2(newSize, minSize, maxSize);
-                resizeBox.sizeDelta = newSize;
+                Vector2 mouseOffset = startMousePos - (Vector2) Input.mousePosition;
+
+                float newSizeX = startSize.x - mouseOffset.x;
+                float newSizeY = startSize.y + mouseOffset.y;
+                newSizeX = Mathf.Clamp(newSizeX, minSize.x, maxSize.x);
+                newSizeY = Mathf.Clamp(newSizeY, minSize.y, maxSize.y);
+                if (resizeHorizontal)
+                    resizeBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, newSizeX);
+                if (resizeVertical)
+                    resizeBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, newSizeY);
             }
         }
 
         public void EndDrag()
         {
             dragging = false;
-        }
-
-        private Vector2 ClampVector2(Vector2 toClamp, Vector2 min, Vector2 max)
-        {
-            return new Vector2(Mathf.Clamp(toClamp.x, min.x, max.x), Mathf.Clamp(toClamp.y, min.y, max.y));
         }
     }
 }
