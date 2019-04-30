@@ -88,8 +88,8 @@ namespace DebuggingConsole
         /// <summary>
         /// All the commands and the method to call are stored here
         /// </summary>
-        private List<ConsoleCommand> consoleCommands;
-
+        private static List<ConsoleCommand> consoleCommands = new List<ConsoleCommand>();
+        
         private static ILogHandler defaultLogHandler;
         private static UnityLogHandler unityLogHandler;
 
@@ -190,7 +190,7 @@ namespace DebuggingConsole
             if (instance.inputField.text.Length <= 0) return;
             if (instance.inputField.text != instance.lastAutoCompleteInput)
             {
-                string[] matchingCommands = instance.consoleCommands
+                string[] matchingCommands = consoleCommands
                     .Select(x => x.command)
                     .Distinct()
                     .Where(x => x.ToLower().StartsWith(instance.inputField.text.ToLower()))
@@ -326,12 +326,12 @@ namespace DebuggingConsole
             CommandAttributeIndexer attributeIndexer = new CommandAttributeIndexer(assembly);
             attributeIndexer.StartIndexing();
 
-            if (instance.consoleCommands == null)
-                instance.consoleCommands = new List<ConsoleCommand>(attributeIndexer.commands.Count);
+            if (consoleCommands == null)
+                consoleCommands = new List<ConsoleCommand>(attributeIndexer.commands.Count);
 
             foreach (KeyValuePair<ConsoleCommandAttribute, MethodInfo> item in attributeIndexer.commands)
             {
-                instance.consoleCommands.Add(new ConsoleCommand(item.Key, item.Value));
+                consoleCommands.Add(new ConsoleCommand(item.Key, item.Value));
             }
         }
 
@@ -346,12 +346,12 @@ namespace DebuggingConsole
 
         public static void AddCommand(ConsoleCommand command)
         {
-            instance.consoleCommands.Add(command);
+            consoleCommands.Add(command);
         }
 
         public static void AddCommands(params ConsoleCommand[] commands)
         {
-            instance.consoleCommands.AddRange(commands);
+            consoleCommands.AddRange(commands);
         }
 
         /// <summary>
@@ -432,7 +432,7 @@ namespace DebuggingConsole
         // ReSharper disable once UnusedMember.Local
         private void ShowCommandsList()
         {
-            foreach (ConsoleCommand command in instance.consoleCommands)
+            foreach (ConsoleCommand command in consoleCommands)
             {
                 if (command.excludeFromCommandList)
                     continue;
