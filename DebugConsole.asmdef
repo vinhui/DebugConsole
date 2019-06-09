@@ -1,8 +1,17 @@
-﻿{
+{
     "name": "DebugConsole",
-    "references": ["Unity.TextMeshPro"],
-    "optionalUnityReferences": [],
+    "references": [
+        "Unity.TextMeshPro",
+        "Unity.ugui"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        ""
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
 }
