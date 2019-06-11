@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
@@ -15,12 +16,14 @@ namespace DebuggingConsole
     /// <summary>
     /// The debug console
     /// </summary>
-    public class DebugConsole : MonoBehaviour
+    public class DebugConsole : MonoBehaviour, ConsoleInput.IConsoleActions
     {
         /// <summary>
         /// Instance of the monobehaviour
         /// </summary>
         private static DebugConsole instance;
+
+        private ConsoleInput consoleInput;
 
         [SerializeField]
         private bool dontDestroyOnLoad = true;
@@ -89,7 +92,7 @@ namespace DebuggingConsole
         /// All the commands and the method to call are stored here
         /// </summary>
         private static List<ConsoleCommand> consoleCommands = new List<ConsoleCommand>();
-        
+
         private static ILogHandler defaultLogHandler;
         private static UnityLogHandler unityLogHandler;
 
@@ -103,6 +106,8 @@ namespace DebuggingConsole
 
         private void Awake()
         {
+            consoleInput = new ConsoleInput();
+            consoleInput.Console.SetCallbacks(this);
             // Set the instance and make sure there aren't multiple instances of this thing
             if (instance == null)
             {
@@ -147,6 +152,16 @@ namespace DebuggingConsole
             ScrollToBottom();
         }
 
+        private void OnEnable()
+        {
+            consoleInput.Enable();
+        }
+
+        private void OnDisable()
+        {
+            consoleInput.Disable();
+        }
+
         private static void Application_logMessageReceived(string condition, string stackTrace, LogType type)
         {
             if (LOG_TO_UNITY)
@@ -154,34 +169,6 @@ namespace DebuggingConsole
             if (type == LogType.Exception)
             {
                 Debug.LogError(condition + Environment.NewLine + stackTrace, null);
-            }
-        }
-
-        #region Handle keyboard input
-
-        private void Update()
-        {
-            InputHandleReturn();
-            InputHandleToggle();
-            InputHandleArrows();
-            InputHandleAutoCompletion();
-            InputHandleCtrlBackspace();
-        }
-
-        private void InputHandleReturn()
-        {
-            if (string.IsNullOrEmpty(inputField.text)) return;
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-            {
-                Submit();
-            }
-        }
-
-        private static void InputHandleAutoCompletion()
-        {
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                DoAutoCompletion();
             }
         }
 
@@ -231,68 +218,6 @@ namespace DebuggingConsole
 
             instance.lastAutoCompleteInput = instance.inputField.text;
         }
-
-        private void InputHandleCtrlBackspace()
-        {
-            if (!Input.GetKey(KeyCode.LeftControl) || !Input.GetKeyDown(KeyCode.Backspace)) return;
-            while (inputField.text.Length > 0 &&
-                   !char.IsWhiteSpace(inputField.text[inputField.text.Length - 1]) &&
-                   !char.IsUpper(inputField.text[inputField.text.Length - 1]) &&
-                   !char.IsPunctuation(inputField.text[inputField.text.Length - 1]))
-            {
-                inputField.text = inputField.text.Substring(0, inputField.text.Length - 1);
-            }
-        }
-
-        private void InputHandleArrows()
-        {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                if (inputHistory.Count > 0)
-                {
-                    currentInputHistory = Mathf.Min(currentInputHistory + 1, inputHistory.Count - 1);
-                    inputField.text = inputHistory[currentInputHistory];
-                    inputField.caretPosition = inputField.text.Length;
-                }
-                else
-                    inputField.text = string.Empty;
-            }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                currentInputHistory = Mathf.Max(currentInputHistory - 1, -1);
-                if (currentInputHistory == -1)
-                {
-                    inputField.text = string.Empty;
-                }
-                else
-                {
-                    if (inputHistory.Count <= 0) return;
-                    inputField.text = inputHistory[currentInputHistory];
-                    inputField.caretPosition = inputField.text.Length;
-                }
-            }
-        }
-
-        private void InputHandleToggle()
-        {
-            // Toggle the visibility of the console when the tilde key is pressed
-            if (Input.GetKeyDown(toggleKey))
-            {
-                bool newValue = !consolePanel.gameObject.activeSelf;
-                consolePanel.gameObject.SetActive(newValue);
-
-                inputField.text = string.Empty;
-
-                if (newValue)
-                {
-                    // Activate the input when the console is shown
-                    inputField.Select();
-                    inputField.ActivateInputField();
-                }
-            }
-        }
-
-        #endregion Handle keyboard input
 
         #region Commands stuff
 
@@ -598,6 +523,78 @@ namespace DebuggingConsole
             {
                 EventSystem.current.SetSelectedGameObject(null);
                 inputField.OnDeselect(null);
+            }
+        }
+
+        public void OnSubmit(InputAction.CallbackContext context)
+        {
+            if (string.IsNullOrEmpty(inputField.text)) return;
+            Submit();
+        }
+
+        public void OnAutoComplete(InputAction.CallbackContext context)
+        {
+            if (!isOpen) return;
+
+            DoAutoCompletion();
+        }
+
+        public void OnShowHide(InputAction.CallbackContext context)
+        {
+            bool newValue = !consolePanel.gameObject.activeSelf;
+            consolePanel.gameObject.SetActive(newValue);
+
+            inputField.text = string.Empty;
+
+            if (newValue)
+            {
+                // Activate the input when the console is shown
+                inputField.Select();
+                inputField.ActivateInputField();
+            }
+        }
+
+        public void OnDeleteWord(InputAction.CallbackContext context)
+        {
+            if (!isOpen) return;
+
+            while (inputField.text.Length > 0 &&
+                   !char.IsWhiteSpace(inputField.text[inputField.text.Length - 1]) &&
+                   !char.IsUpper(inputField.text[inputField.text.Length - 1]) &&
+                   !char.IsPunctuation(inputField.text[inputField.text.Length - 1]))
+            {
+                inputField.text = inputField.text.Substring(0, inputField.text.Length - 1);
+            }
+        }
+
+        public void OnHistoryUp(InputAction.CallbackContext context)
+        {
+            if (!isOpen) return;
+
+            if (inputHistory.Count > 0)
+            {
+                currentInputHistory = Mathf.Min(currentInputHistory + 1, inputHistory.Count - 1);
+                inputField.text = inputHistory[currentInputHistory];
+                inputField.caretPosition = inputField.text.Length;
+            }
+            else
+                inputField.text = string.Empty;
+        }
+
+        public void OnHistoryDown(InputAction.CallbackContext context)
+        {
+            if (!isOpen) return;
+
+            currentInputHistory = Mathf.Max(currentInputHistory - 1, -1);
+            if (currentInputHistory == -1)
+            {
+                inputField.text = string.Empty;
+            }
+            else
+            {
+                if (inputHistory.Count <= 0) return;
+                inputField.text = inputHistory[currentInputHistory];
+                inputField.caretPosition = inputField.text.Length;
             }
         }
     }

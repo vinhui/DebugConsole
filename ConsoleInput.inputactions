@@ -1,0 +1,164 @@
+{
+    "name": "ConsoleInput",
+    "maps": [
+        {
+            "name": "Console",
+            "id": "390a8ee8-774f-405f-a893-5fd77c9fbbf7",
+            "actions": [
+                {
+                    "name": "Submit",
+                    "id": "57ec5125-64f1-4c4c-b99c-6aa1968d6895",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press",
+                    "bindings": []
+                },
+                {
+                    "name": "AutoComplete",
+                    "id": "dfab1f24-7b58-49a1-9526-9027647a4f8b",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press",
+                    "bindings": []
+                },
+                {
+                    "name": "ShowHide",
+                    "id": "9c7a5c4b-47d3-4b39-a67c-d809f3033c0b",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press",
+                    "bindings": []
+                },
+                {
+                    "name": "DeleteWord",
+                    "id": "2ea02632-9d81-4acc-a419-d6bec0902d63",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press",
+                    "bindings": []
+                },
+                {
+                    "name": "HistoryUp",
+                    "id": "424f5efd-6d01-455a-b400-69c7b895d614",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press",
+                    "bindings": []
+                },
+                {
+                    "name": "HistoryDown",
+                    "id": "36fd4266-69fb-48be-a988-a6deaab7bba0",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press",
+                    "bindings": []
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "fd966bc3-d202-4f62-8f83-9567c35988a4",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "cdba1694-ae23-4da4-8e85-b6e1445f329c",
+                    "path": "<Keyboard>/numpadEnter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "c92e81ae-1727-4caf-8f43-2f309e270086",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AutoComplete",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "d5f50501-a0d6-43ff-bf21-2e403f09c23e",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ShowHide",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "9327807d-63a8-43b1-8a87-2e102cbd87d0",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DeleteWord",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "ffc26124-e5a2-42d9-906d-c0a8a688f6fb",
+                    "path": "<Keyboard>/upArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "HistoryUp",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "9a08b2ad-21c2-4822-9a5c-807c55c87ce8",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "HistoryDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
