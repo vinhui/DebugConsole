@@ -18,7 +18,7 @@ namespace DebuggingConsole
 
         public bool excludeFromCommandList { get; set; }
         public bool showTypesInUsage { get; set; }
-        
+
         public bool captureAllParamsAsOne { get; protected set; }
 
         protected readonly MethodInfo method;
@@ -150,6 +150,11 @@ namespace DebuggingConsole
                     DebugConsole.WriteLine(help);
                 }
             }
+        }
+
+        public virtual bool IsMatchForAutoComplete(string input)
+        {
+            return !string.IsNullOrWhiteSpace(command) && command.ToLower().StartsWith(input);
         }
 
         protected virtual object ConvertToParameterType(int parameterIndex, string value, out bool success)
