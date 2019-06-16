@@ -188,12 +188,14 @@ namespace DebuggingConsole
         public static void DoAutoCompletion()
         {
             if (instance.inputField.text.Length <= 0) return;
+            if (string.IsNullOrWhiteSpace(instance.inputField.text)) return;
             if (instance.inputField.text != instance.lastAutoCompleteInput)
             {
+                string input = instance.inputField.text.ToLower();
                 string[] matchingCommands = consoleCommands
-                    .Select(x => x.command)
                     .Distinct()
-                    .Where(x => x.ToLower().StartsWith(instance.inputField.text.ToLower()))
+                    .Where(x => x != null && x.IsMatchForAutoComplete(input))
+                    .Select(x => x.command)
                     .ToArray();
 
                 if (matchingCommands.Length == 1)
@@ -344,13 +346,15 @@ namespace DebuggingConsole
             instance.RunCommand(cmd);
         }
 
-        public static void AddCommand(ConsoleCommand command)
+        public static void AddCommand([NotNull] ConsoleCommand command)
         {
+            if (command == null) throw new ArgumentNullException(nameof(command));
             consoleCommands.Add(command);
         }
 
-        public static void AddCommands(params ConsoleCommand[] commands)
+        public static void AddCommands([NotNull] params ConsoleCommand[] commands)
         {
+            if (commands == null) throw new ArgumentNullException(nameof(commands));
             consoleCommands.AddRange(commands);
         }
 
