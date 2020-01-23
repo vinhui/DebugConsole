@@ -3,14 +3,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 
-public class ConsoleInput : IInputActionCollection
+public class @ConsoleInput : IInputActionCollection, IDisposable
 {
     private InputActionAsset asset;
-    public ConsoleInput()
+    public @ConsoleInput()
     {
         asset = InputActionAsset.FromJson(@"{
     ""name"": ""ConsoleInput"",
@@ -21,69 +20,51 @@ public class ConsoleInput : IInputActionCollection
             ""actions"": [
                 {
                     ""name"": ""Submit"",
+                    ""type"": ""Value"",
                     ""id"": ""57ec5125-64f1-4c4c-b99c-6aa1968d6895"",
-                    ""expectedControlLayout"": """",
-                    ""continuous"": false,
-                    ""passThrough"": false,
-                    ""initialStateCheck"": false,
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
-                    ""bindings"": []
+                    ""interactions"": ""Press""
                 },
                 {
                     ""name"": ""AutoComplete"",
+                    ""type"": ""Value"",
                     ""id"": ""dfab1f24-7b58-49a1-9526-9027647a4f8b"",
-                    ""expectedControlLayout"": """",
-                    ""continuous"": false,
-                    ""passThrough"": false,
-                    ""initialStateCheck"": false,
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
-                    ""bindings"": []
+                    ""interactions"": ""Press""
                 },
                 {
                     ""name"": ""ShowHide"",
+                    ""type"": ""Value"",
                     ""id"": ""9c7a5c4b-47d3-4b39-a67c-d809f3033c0b"",
-                    ""expectedControlLayout"": """",
-                    ""continuous"": false,
-                    ""passThrough"": false,
-                    ""initialStateCheck"": false,
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
-                    ""bindings"": []
+                    ""interactions"": ""Press""
                 },
                 {
                     ""name"": ""DeleteWord"",
+                    ""type"": ""Value"",
                     ""id"": ""2ea02632-9d81-4acc-a419-d6bec0902d63"",
-                    ""expectedControlLayout"": """",
-                    ""continuous"": false,
-                    ""passThrough"": false,
-                    ""initialStateCheck"": false,
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
-                    ""bindings"": []
+                    ""interactions"": ""Press""
                 },
                 {
                     ""name"": ""HistoryUp"",
+                    ""type"": ""Value"",
                     ""id"": ""424f5efd-6d01-455a-b400-69c7b895d614"",
-                    ""expectedControlLayout"": """",
-                    ""continuous"": false,
-                    ""passThrough"": false,
-                    ""initialStateCheck"": false,
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
-                    ""bindings"": []
+                    ""interactions"": ""Press""
                 },
                 {
                     ""name"": ""HistoryDown"",
+                    ""type"": ""Value"",
                     ""id"": ""36fd4266-69fb-48be-a988-a6deaab7bba0"",
-                    ""expectedControlLayout"": """",
-                    ""continuous"": false,
-                    ""passThrough"": false,
-                    ""initialStateCheck"": false,
+                    ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Press"",
-                    ""bindings"": []
+                    ""interactions"": ""Press""
                 }
             ],
             ""bindings"": [
@@ -96,8 +77,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""Submit"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
@@ -108,8 +88,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""Submit"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
@@ -120,8 +99,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""AutoComplete"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
@@ -132,8 +110,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""ShowHide"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
@@ -144,8 +121,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""DeleteWord"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
@@ -156,8 +132,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""HistoryUp"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
@@ -168,8 +143,7 @@ public class ConsoleInput : IInputActionCollection
                     ""groups"": """",
                     ""action"": ""HistoryDown"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -177,16 +151,16 @@ public class ConsoleInput : IInputActionCollection
     ""controlSchemes"": []
 }");
         // Console
-        m_Console = asset.GetActionMap("Console");
-        m_Console_Submit = m_Console.GetAction("Submit");
-        m_Console_AutoComplete = m_Console.GetAction("AutoComplete");
-        m_Console_ShowHide = m_Console.GetAction("ShowHide");
-        m_Console_DeleteWord = m_Console.GetAction("DeleteWord");
-        m_Console_HistoryUp = m_Console.GetAction("HistoryUp");
-        m_Console_HistoryDown = m_Console.GetAction("HistoryDown");
+        m_Console = asset.FindActionMap("Console", throwIfNotFound: true);
+        m_Console_Submit = m_Console.FindAction("Submit", throwIfNotFound: true);
+        m_Console_AutoComplete = m_Console.FindAction("AutoComplete", throwIfNotFound: true);
+        m_Console_ShowHide = m_Console.FindAction("ShowHide", throwIfNotFound: true);
+        m_Console_DeleteWord = m_Console.FindAction("DeleteWord", throwIfNotFound: true);
+        m_Console_HistoryUp = m_Console.FindAction("HistoryUp", throwIfNotFound: true);
+        m_Console_HistoryDown = m_Console.FindAction("HistoryDown", throwIfNotFound: true);
     }
 
-    ~ConsoleInput()
+    public void Dispose()
     {
         UnityEngine.Object.Destroy(asset);
     }
@@ -203,10 +177,7 @@ public class ConsoleInput : IInputActionCollection
         set => asset.devices = value;
     }
 
-    public ReadOnlyArray<InputControlScheme> controlSchemes
-    {
-        get => asset.controlSchemes;
-    }
+    public ReadOnlyArray<InputControlScheme> controlSchemes => asset.controlSchemes;
 
     public bool Contains(InputAction action)
     {
@@ -234,84 +205,77 @@ public class ConsoleInput : IInputActionCollection
     }
 
     // Console
-    private InputActionMap m_Console;
+    private readonly InputActionMap m_Console;
     private IConsoleActions m_ConsoleActionsCallbackInterface;
-    private InputAction m_Console_Submit;
-    private InputAction m_Console_AutoComplete;
-    private InputAction m_Console_ShowHide;
-    private InputAction m_Console_DeleteWord;
-    private InputAction m_Console_HistoryUp;
-    private InputAction m_Console_HistoryDown;
+    private readonly InputAction m_Console_Submit;
+    private readonly InputAction m_Console_AutoComplete;
+    private readonly InputAction m_Console_ShowHide;
+    private readonly InputAction m_Console_DeleteWord;
+    private readonly InputAction m_Console_HistoryUp;
+    private readonly InputAction m_Console_HistoryDown;
     public struct ConsoleActions
     {
-        private ConsoleInput m_Wrapper;
-        public ConsoleActions(ConsoleInput wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Submit { get { return m_Wrapper.m_Console_Submit; } }
-        public InputAction @AutoComplete { get { return m_Wrapper.m_Console_AutoComplete; } }
-        public InputAction @ShowHide { get { return m_Wrapper.m_Console_ShowHide; } }
-        public InputAction @DeleteWord { get { return m_Wrapper.m_Console_DeleteWord; } }
-        public InputAction @HistoryUp { get { return m_Wrapper.m_Console_HistoryUp; } }
-        public InputAction @HistoryDown { get { return m_Wrapper.m_Console_HistoryDown; } }
+        private @ConsoleInput m_Wrapper;
+        public ConsoleActions(@ConsoleInput wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Submit => m_Wrapper.m_Console_Submit;
+        public InputAction @AutoComplete => m_Wrapper.m_Console_AutoComplete;
+        public InputAction @ShowHide => m_Wrapper.m_Console_ShowHide;
+        public InputAction @DeleteWord => m_Wrapper.m_Console_DeleteWord;
+        public InputAction @HistoryUp => m_Wrapper.m_Console_HistoryUp;
+        public InputAction @HistoryDown => m_Wrapper.m_Console_HistoryDown;
         public InputActionMap Get() { return m_Wrapper.m_Console; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
-        public bool enabled { get { return Get().enabled; } }
-        public InputActionMap Clone() { return Get().Clone(); }
+        public bool enabled => Get().enabled;
         public static implicit operator InputActionMap(ConsoleActions set) { return set.Get(); }
         public void SetCallbacks(IConsoleActions instance)
         {
             if (m_Wrapper.m_ConsoleActionsCallbackInterface != null)
             {
-                Submit.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnSubmit;
-                Submit.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnSubmit;
-                Submit.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnSubmit;
-                AutoComplete.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnAutoComplete;
-                AutoComplete.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnAutoComplete;
-                AutoComplete.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnAutoComplete;
-                ShowHide.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnShowHide;
-                ShowHide.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnShowHide;
-                ShowHide.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnShowHide;
-                DeleteWord.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnDeleteWord;
-                DeleteWord.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnDeleteWord;
-                DeleteWord.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnDeleteWord;
-                HistoryUp.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryUp;
-                HistoryUp.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryUp;
-                HistoryUp.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryUp;
-                HistoryDown.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryDown;
-                HistoryDown.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryDown;
-                HistoryDown.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryDown;
+                @Submit.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnSubmit;
+                @Submit.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnSubmit;
+                @Submit.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnSubmit;
+                @AutoComplete.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnAutoComplete;
+                @AutoComplete.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnAutoComplete;
+                @AutoComplete.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnAutoComplete;
+                @ShowHide.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnShowHide;
+                @ShowHide.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnShowHide;
+                @ShowHide.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnShowHide;
+                @DeleteWord.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnDeleteWord;
+                @DeleteWord.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnDeleteWord;
+                @DeleteWord.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnDeleteWord;
+                @HistoryUp.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryUp;
+                @HistoryUp.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryUp;
+                @HistoryUp.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryUp;
+                @HistoryDown.started -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryDown;
+                @HistoryDown.performed -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryDown;
+                @HistoryDown.canceled -= m_Wrapper.m_ConsoleActionsCallbackInterface.OnHistoryDown;
             }
             m_Wrapper.m_ConsoleActionsCallbackInterface = instance;
             if (instance != null)
             {
-                Submit.started += instance.OnSubmit;
-                Submit.performed += instance.OnSubmit;
-                Submit.canceled += instance.OnSubmit;
-                AutoComplete.started += instance.OnAutoComplete;
-                AutoComplete.performed += instance.OnAutoComplete;
-                AutoComplete.canceled += instance.OnAutoComplete;
-                ShowHide.started += instance.OnShowHide;
-                ShowHide.performed += instance.OnShowHide;
-                ShowHide.canceled += instance.OnShowHide;
-                DeleteWord.started += instance.OnDeleteWord;
-                DeleteWord.performed += instance.OnDeleteWord;
-                DeleteWord.canceled += instance.OnDeleteWord;
-                HistoryUp.started += instance.OnHistoryUp;
-                HistoryUp.performed += instance.OnHistoryUp;
-                HistoryUp.canceled += instance.OnHistoryUp;
-                HistoryDown.started += instance.OnHistoryDown;
-                HistoryDown.performed += instance.OnHistoryDown;
-                HistoryDown.canceled += instance.OnHistoryDown;
+                @Submit.started += instance.OnSubmit;
+                @Submit.performed += instance.OnSubmit;
+                @Submit.canceled += instance.OnSubmit;
+                @AutoComplete.started += instance.OnAutoComplete;
+                @AutoComplete.performed += instance.OnAutoComplete;
+                @AutoComplete.canceled += instance.OnAutoComplete;
+                @ShowHide.started += instance.OnShowHide;
+                @ShowHide.performed += instance.OnShowHide;
+                @ShowHide.canceled += instance.OnShowHide;
+                @DeleteWord.started += instance.OnDeleteWord;
+                @DeleteWord.performed += instance.OnDeleteWord;
+                @DeleteWord.canceled += instance.OnDeleteWord;
+                @HistoryUp.started += instance.OnHistoryUp;
+                @HistoryUp.performed += instance.OnHistoryUp;
+                @HistoryUp.canceled += instance.OnHistoryUp;
+                @HistoryDown.started += instance.OnHistoryDown;
+                @HistoryDown.performed += instance.OnHistoryDown;
+                @HistoryDown.canceled += instance.OnHistoryDown;
             }
         }
     }
-    public ConsoleActions @Console
-    {
-        get
-        {
-            return new ConsoleActions(this);
-        }
-    }
+    public ConsoleActions @Console => new ConsoleActions(this);
     public interface IConsoleActions
     {
         void OnSubmit(InputAction.CallbackContext context);
