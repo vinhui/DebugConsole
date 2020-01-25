@@ -539,6 +539,9 @@ namespace DebuggingConsole
 
         public void OnShowHide(InputAction.CallbackContext context)
         {
+            if (!context.performed)
+                return;
+
             bool newValue = !consolePanel.gameObject.activeSelf;
             consolePanel.gameObject.SetActive(newValue);
 
