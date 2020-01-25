@@ -32,12 +32,6 @@ namespace DebuggingConsole
         private GameObject dontDestroyObject;
 
         /// <summary>
-        /// The key to press to toggle the debug console
-        /// </summary>
-        [SerializeField]
-        private KeyCode toggleKey = KeyCode.BackQuote;
-
-        /// <summary>
         /// The textfield that should have all the messages
         /// </summary>
         [SerializeField]
