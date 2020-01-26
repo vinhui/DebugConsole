@@ -12,11 +12,11 @@ namespace DebuggingConsole
         // ReSharper disable once UnusedMember.Local
         private static object GetVar(string gameObject, string component, string var)
         {
-            GameObject go = GetGameObject(gameObject);
+            var go = GetGameObject(gameObject);
 
             if (go != null)
             {
-                Component c = GetComponent(go, component);
+                var c = GetComponent(go, component);
 
                 if (c != null)
                 {
@@ -31,11 +31,11 @@ namespace DebuggingConsole
         // ReSharper disable once UnusedMember.Local
         private static void SetVar(string gameObject, string component, string var, object value)
         {
-            GameObject go = GetGameObject(gameObject);
+            var go = GetGameObject(gameObject);
 
             if (go != null)
             {
-                Component c = GetComponent(go, component);
+                var c = GetComponent(go, component);
 
                 if (c != null)
                 {
@@ -81,11 +81,11 @@ namespace DebuggingConsole
 
         private static object CallOverloads(string gameObject, string component, string method, string arg1, string arg2, string arg3, string arg4)
         {
-            GameObject go = GetGameObject(gameObject);
+            var go = GetGameObject(gameObject);
 
             if (go != null)
             {
-                Component c = GetComponent(go, component);
+                var c = GetComponent(go, component);
 
                 if (c != null)
                 {
@@ -98,7 +98,7 @@ namespace DebuggingConsole
 
         private static GameObject GetGameObject(string name)
         {
-            GameObject go = GameObject.Find(name);
+            var go = GameObject.Find(name);
 
             if (go == null)
                 DebugConsole.WriteErrorLine("There is no game object with the name '" + name + "' in the scene");
@@ -108,7 +108,7 @@ namespace DebuggingConsole
 
         private static Component GetComponent(GameObject go, string name)
         {
-            Component c = go.GetComponent(name);
+            var c = go.GetComponent(name);
 
             if (c == null)
                 DebugConsole.WriteErrorLine("There is no component called '" + name + "' on game object '" + go.name + "'");
@@ -118,19 +118,19 @@ namespace DebuggingConsole
 
         private static object CallMethodOnComponent(Component c, string name, params object[] @params)
         {
-            Type cType = c.GetType();
+            var cType = c.GetType();
 
-            MethodInfo method = cType.GetMethod(name, BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var method = cType.GetMethod(name, BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
             if (method != null)
             {
-                object[] nonNullParams = @params.Where(x => x != null).ToArray();
+                var nonNullParams = @params.Where(x => x != null).ToArray();
 
-                ParameterInfo[] paramsInfo = method.GetParameters();
+                var paramsInfo = method.GetParameters();
 
                 if (nonNullParams.Length == paramsInfo.Length)
                 {
-                    for (int i = 0; i < paramsInfo.Length; i++)
+                    for (var i = 0; i < paramsInfo.Length; i++)
                     {
                         nonNullParams[i] = Convert.ChangeType(nonNullParams[i], paramsInfo[i].ParameterType);
                     }
@@ -148,9 +148,9 @@ namespace DebuggingConsole
 
         private static void SetVarOnUObject(Object c, string name, object value)
         {
-            Type cType = c.GetType();
+            var cType = c.GetType();
             PropertyInfo property = null;
-            FieldInfo field = cType.GetField(name, BindingFlags.Instance | BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var field = cType.GetField(name, BindingFlags.Instance | BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             if (field == null)
                 property = cType.GetProperty(name, BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
@@ -175,9 +175,9 @@ namespace DebuggingConsole
 
         private static object GetVarOnUObject(Object c, string name)
         {
-            Type cType = c.GetType();
+            var cType = c.GetType();
             PropertyInfo property = null;
-            FieldInfo field = cType.GetField(name, BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var field = cType.GetField(name, BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             if (field == null)
                 property = cType.GetProperty(name, BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 

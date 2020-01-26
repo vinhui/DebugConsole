@@ -172,8 +172,8 @@ namespace DebuggingConsole
             if (string.IsNullOrWhiteSpace(instance.inputField.text)) return;
             if (instance.inputField.text != instance.lastAutoCompleteInput)
             {
-                string input = instance.inputField.text.ToLower();
-                string[] matchingCommands = consoleCommands
+                var input = instance.inputField.text.ToLower();
+                var matchingCommands = consoleCommands
                     .Distinct()
                     .Where(x => x != null && x.IsMatchForAutoComplete(input))
                     .Select(x => x.command)
@@ -188,7 +188,7 @@ namespace DebuggingConsole
                 {
                     if (matchingCommands.Length > 0)
                     {
-                        int matchingTillIndex = Enumerable
+                        var matchingTillIndex = Enumerable
                             .Range(0, matchingCommands.Min(x => x.Length))
                             .Count(i => matchingCommands.All(x => x[i] == matchingCommands[0][i]));
 
@@ -201,7 +201,7 @@ namespace DebuggingConsole
                         if (matchingCommands.Length > 1)
                         {
                             WriteLine("Available commands:");
-                            foreach (string item in matchingCommands)
+                            foreach (var item in matchingCommands)
                                 WriteLine("- {0}", item);
                         }
                     }
@@ -224,11 +224,11 @@ namespace DebuggingConsole
         public static void StartCommandIndexing(IEnumerable<Assembly> assemblies)
         {
             // Start a timer so we know how long the indexing takes
-            Stopwatch s = new Stopwatch();
+            var s = new Stopwatch();
             s.Start();
 
             // Loop through the assemblies and index them individually
-            foreach (Assembly assembly in assemblies)
+            foreach (var assembly in assemblies)
             {
                 StartCommandIndexing(assembly);
             }
@@ -244,13 +244,13 @@ namespace DebuggingConsole
         /// <param name="assembly">Assembly to search in</param>
         public static void StartCommandIndexing(Assembly assembly)
         {
-            CommandAttributeIndexer attributeIndexer = new CommandAttributeIndexer(assembly);
+            var attributeIndexer = new CommandAttributeIndexer(assembly);
             attributeIndexer.StartIndexing();
 
             if (consoleCommands == null)
                 consoleCommands = new List<ConsoleCommand>(attributeIndexer.commands.Count);
 
-            foreach (KeyValuePair<ConsoleCommandAttribute, MethodInfo> item in attributeIndexer.commands)
+            foreach (var item in attributeIndexer.commands)
             {
                 consoleCommands.Add(new ConsoleCommand(item.Key, item.Value));
             }
@@ -295,25 +295,25 @@ namespace DebuggingConsole
                 inputHistory.Insert(0, cmd);
 
             // Split the command in to smaller parts
-            string[] text = ConsoleCommand.SplitOnSpaces(cmd);
+            var text = ConsoleCommand.SplitOnSpaces(cmd);
 
             // Again, make sure there is something
             if (text.Length == 0) return;
 
-            string enteredCommand = text[0].ToLower();
-            string[] parameters = new string[text.Length - 1];
-            for (int i = 0; i < parameters.Length; i++)
+            var enteredCommand = text[0].ToLower();
+            var parameters = new string[text.Length - 1];
+            for (var i = 0; i < parameters.Length; i++)
                 parameters[i] = text[i + 1];
 
             // Find matches for the input from the indexed commands
-            List<ConsoleCommand> matchingCommands = consoleCommands
+            var matchingCommands = consoleCommands
                 .Where(x => x.MatchesEnteredCommand(enteredCommand))
                 .ToList();
 
             if (matchingCommands.Count > 0)
             {
-                string paramsAsString = cmd.Substring(enteredCommand.Length).Trim();
-                ConsoleCommand matchingCommand = matchingCommands
+                var paramsAsString = cmd.Substring(enteredCommand.Length).Trim();
+                var matchingCommand = matchingCommands
                     .FirstOrDefault(x => x.captureAllParamsAsOne
                         ? x.MatchesParameters(paramsAsString)
                         : x.MatchesParameters(parameters));
@@ -326,7 +326,7 @@ namespace DebuggingConsole
                 {
                     // Show the user what went wrong
                     WriteWarningLine("The amount of parameters doesn't match");
-                    string help = matchingCommands.Select(x => x.help)
+                    var help = matchingCommands.Select(x => x.help)
                         .FirstOrDefault(x => !string.IsNullOrEmpty(x));
                     if (!string.IsNullOrEmpty(help))
                     {
@@ -355,7 +355,7 @@ namespace DebuggingConsole
         // ReSharper disable once UnusedMember.Local
         private void ShowCommandsList()
         {
-            foreach (ConsoleCommand command in consoleCommands)
+            foreach (var command in consoleCommands)
             {
                 if (command.excludeFromCommandList)
                     continue;
@@ -542,7 +542,7 @@ namespace DebuggingConsole
             if (!context.performed)
                 return;
 
-            bool newValue = !consolePanel.gameObject.activeSelf;
+            var newValue = !consolePanel.gameObject.activeSelf;
             consolePanel.gameObject.SetActive(newValue);
 
             inputField.text = string.Empty;

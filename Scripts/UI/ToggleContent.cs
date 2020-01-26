@@ -32,7 +32,7 @@ namespace DebuggingConsole.UI
             content.gameObject.SetActive(true);
 
             float timer = 0;
-            Vector2 startSize = rectTransform.sizeDelta;
+            var startSize = rectTransform.sizeDelta;
 
             while (timer < resizeTime)
             {
@@ -49,8 +49,8 @@ namespace DebuggingConsole.UI
             prevSize = rectTransform.sizeDelta;
 
             float timer = 0;
-            Vector2 startSize = prevSize;
-            Vector2 targetSize = new Vector2(prevSize.x, header.sizeDelta.y);
+            var startSize = prevSize;
+            var targetSize = new Vector2(prevSize.x, header.sizeDelta.y);
 
             while (timer < resizeTime)
             {

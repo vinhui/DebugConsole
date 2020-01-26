@@ -84,7 +84,7 @@ namespace DebuggingConsole
         [ConsoleCommand("list.hierarchy", "Show the hierarchy tree")]
         private static string ListHierarchy()
         {
-            string str = "";
+            var str = "";
             foreach (Transform obj in Object.FindObjectsOfType(typeof(Transform)))
             {
                 if (obj.transform.parent == null)
@@ -97,7 +97,7 @@ namespace DebuggingConsole
 
         private static string ListHierarchy(int depth, Transform go)
         {
-            string str = "";
+            var str = "";
 
             str += string.Format("{0}{1}{2} \n",
                 string.Join(
@@ -116,17 +116,17 @@ namespace DebuggingConsole
         [ConsoleCommand("list.components", "List all the components on a game object")]
         private static string ListComponents(string gameObject)
         {
-            IEnumerable<GameObject> go = Resources.FindObjectsOfTypeAll<GameObject>()
+            var go = Resources.FindObjectsOfTypeAll<GameObject>()
                 .Where(obj => obj.name == gameObject);
 
-            string str = "";
+            var str = "";
             if (!go.Any())
                 str = string.Format("There are no objects with the name '{0}'", gameObject);
 
-            foreach (GameObject o in go)
+            foreach (var o in go)
             {
                 str += string.Format("Components on '{0}':\n", gameObject);
-                foreach (Component component in o.GetComponents<Component>())
+                foreach (var component in o.GetComponents<Component>())
                 {
                     str += string.Format("- {0}\n", component.GetType().Name);
                 }
@@ -137,21 +137,21 @@ namespace DebuggingConsole
         [ConsoleCommand("list.vars", "List all the variables and values of a component that are serialized")]
         private static string ListVariables(string gameObject, string component)
         {
-            GameObject go = GameObject.Find(gameObject);
+            var go = GameObject.Find(gameObject);
 
             if (go == null)
                 return string.Format("Can't find game object with the name '{0}'", gameObject);
 
-            Component comp = go.GetComponent(component);
+            var comp = go.GetComponent(component);
 
             if (comp == null)
                 return string.Format("'{0}' doesn't have a component of type '{1}'", gameObject, component);
 
-            string str = string.Format("Field values of '{0}':\n", component);
+            var str = string.Format("Field values of '{0}':\n", component);
 
             if (comp is Transform)
             {
-                Transform transform = comp as Transform;
+                var transform = comp as Transform;
                 str += string.Format("Position".PadRight(35, ' ') + "\t{0}\n" +
                                      "Rotation".PadRight(31, ' ') + "\t{1}\n" +
                                      "Scale".PadRight(35, ' ') + "\t{2}\n",
@@ -161,10 +161,10 @@ namespace DebuggingConsole
             }
             else
             {
-                FieldInfo[] fields = comp.GetType()
+                var fields = comp.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                foreach (FieldInfo fieldInfo in fields)
+                foreach (var fieldInfo in fields)
                 {
                     if (fieldInfo.IsPrivate && !Attribute.IsDefined(fieldInfo, typeof(SerializeField)))
                         continue;

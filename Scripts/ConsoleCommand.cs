@@ -65,13 +65,13 @@ namespace DebuggingConsole
         /// </summary>
         private void ParametersFromMethodInfo()
         {
-            ParameterInfo[] parameters = method.GetParameters();
+            var parameters = method.GetParameters();
             parameterCount = parameters.Length;
             parameterNames = new string[parameterCount];
             parameterTypes = new Type[parameterCount];
-            for (int i = 0; i < parameters.Length; i++)
+            for (var i = 0; i < parameters.Length; i++)
             {
-                ParameterInfo param = parameters[i];
+                var param = parameters[i];
                 parameterNames[i] = param.Name;
                 parameterTypes[i] = param.ParameterType;
             }
@@ -113,8 +113,8 @@ namespace DebuggingConsole
         {
             try
             {
-                object[] @params = new object[parameters.Length];
-                for (int i = 0; i < parameters.Length; i++)
+                var @params = new object[parameters.Length];
+                for (var i = 0; i < parameters.Length; i++)
                 {
                     bool success;
                     @params[i] = ConvertToParameterType(i, parameters[i], out success);
@@ -123,7 +123,7 @@ namespace DebuggingConsole
                 }
 
                 // Call the method with the parameters
-                object returnValue = method.Invoke(
+                var returnValue = method.Invoke(
                     method.DeclaringType != null && method.DeclaringType.IsSubclassOf(typeof(MonoBehaviour))
                         ? Object.FindObjectOfType(method.DeclaringType)
                         : null, @params);
@@ -159,8 +159,8 @@ namespace DebuggingConsole
 
         protected virtual object ConvertToParameterType(int parameterIndex, string value, out bool success)
         {
-            string paramName = parameterNames[parameterIndex];
-            Type paramType = parameterTypes[parameterIndex];
+            var paramName = parameterNames[parameterIndex];
+            var paramType = parameterTypes[parameterIndex];
             object returnVal = null;
             try
             {

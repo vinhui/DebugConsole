@@ -46,10 +46,10 @@ namespace DebuggingConsole.UI
 
             if (dragging)
             {
-                Vector2 mouseOffset = startMousePos - (Vector2) Input.mousePosition;
+                var mouseOffset = startMousePos - (Vector2) Input.mousePosition;
 
-                float newSizeX = startSize.x - mouseOffset.x;
-                float newSizeY = startSize.y + mouseOffset.y;
+                var newSizeX = startSize.x - mouseOffset.x;
+                var newSizeY = startSize.y + mouseOffset.y;
                 newSizeX = Mathf.Clamp(newSizeX, minSize.x, maxSize.x);
                 newSizeY = Mathf.Clamp(newSizeY, minSize.y, maxSize.y);
                 if (resizeHorizontal)
